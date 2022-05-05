@@ -74,3 +74,22 @@ test('getMatchingTag omero-web', async () => {
   const r = await tags.getMatchingTag(docker_omeroweb, docker_omeroweb_latest)
   expect(r.tag).toEqual('5.14.0-1')
 })
+
+test('getMatchingTag omero-web regex', async () => {
+  const r = await tags.getMatchingTag(
+    docker_omeroweb,
+    docker_omeroweb_latest,
+    '^\\d+\\.\\d+\\.\\d+$'
+  )
+  expect(r.tag).toEqual('5.14.0')
+})
+
+test('getMatchingTag no match throws', async () => {
+  await expect(async () => {
+    await tags.getMatchingTag(
+      docker_omeroweb,
+      docker_omeroweb_latest,
+      'no-match'
+    )
+  }).rejects.toThrow('No match found for ')
+})

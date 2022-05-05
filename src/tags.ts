@@ -172,12 +172,14 @@ function arraysEqual(a: any[], b: any[]): boolean {
  * Matches are found by comparing the digest(s) of the alias tag and the digest(s) of the tags in the list. If a tag has multiple images (multi-arch) the full set of digests must match.
  * @param tagList List of tags/digests to consider
  * @param pointer Tag to be dereferenced
- * @returns longest tag from tagList that matches pointer digest(s)
+ * @param regex Regex to match against the tag name
+ * @returns longest tag from tagList that matches pointer digest(s) and regex
  * @throws Error if no longer matching tag is found in tagList
  */
 export async function getMatchingTag(
   tagList: DockerHubTagList | QuayIoTagList,
-  pointer: DockerHubTag | QuayIoTag
+  pointer: DockerHubTag | QuayIoTag,
+  regex?: string
 ): Promise<TagDigest> {
   const tagDigests = getTagDigests(tagList)
   core.debug(`tag digests: ${tagDigests.toString()}`)
@@ -189,11 +191,14 @@ export async function getMatchingTag(
     if (tagDigest.tag === pointerTagDigest.tag) {
       continue
     }
-
-    if (arraysEqual(pointerTagDigest.digests, tagDigest.digests)) {
-      if (!match || match.tag.length < tagDigest.tag.length) {
-        match = tagDigest
-      }
+    if (regex && !tagDigest.tag.match(regex)) {
+      continue
+    }
+    if (!arraysEqual(pointerTagDigest.digests, tagDigest.digests)) {
+      continue
+    }
+    if (!match || match.tag.length < tagDigest.tag.length) {
+      match = tagDigest
     }
   }
   if (!match) {
