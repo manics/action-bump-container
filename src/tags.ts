@@ -32,7 +32,7 @@ export interface QuayIoTag {
   start_ts: number
   manifest_digest: string
   is_manifest_list: boolean
-  size: number
+  size: number | null
   last_modified: string
 }
 

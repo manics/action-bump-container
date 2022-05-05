@@ -3,35 +3,56 @@ import {expect, jest, test} from '@jest/globals'
 
 jest.retryTimes(0)
 
-test('dockerHubGetTag', async () => {
-  const r = await tags.dockerHubGetTag('openmicroscopy/omero-server', 'latest')
-  expect(r.name).toEqual('latest')
+const dockerHubRepos = [
+  ['jupyterhub/jupyterhub', 'latest'],
+  ['openmicroscopy/omero-server', 'latest']
+]
+const quayIoRepos = [
+  ['containers/podman', 'v3'],
+  ['jupyterhub/repo2docker', 'main']
+]
+
+test.each(dockerHubRepos)('dockerHubGetTag %s', async (repo, tag) => {
+  const r = await tags.dockerHubGetTag(repo, tag)
+  expect(r.name).toEqual(tag)
   expect(r.images.length).toBeGreaterThan(0)
 })
 
-test('dockerHubListTags', async () => {
-  const r = await tags.dockerHubListTags('openmicroscopy/omero-server')
+test.each(dockerHubRepos)('dockerHubListTags %s', async (repo, tag) => {
+  const r = await tags.dockerHubListTags(repo)
   expect(r.results.length).toBeGreaterThan(1)
 })
 
-test('quayIoGetTag', async () => {
-  const r = await tags.quayIoGetTag('jupyterhub/repo2docker', 'main')
-  expect(r.name).toEqual('main')
+test.each(quayIoRepos)('quayIoGetTag %s', async (repo, tag) => {
+  const r = await tags.quayIoGetTag(repo, tag)
+  expect(r.name).toEqual(tag)
 })
 
-test('quayIoListTags', async () => {
-  const r = await tags.quayIoListTags('jupyterhub/repo2docker')
+test.each(quayIoRepos)('quayIoListTags %s', async (repo, tag) => {
+  const r = await tags.quayIoListTags(repo)
   expect(r.tags.length).toBeGreaterThan(1)
 })
 
+// Single arch
 import * as quay_repo2docker from './quay.io-jupyterhub-repo2docker-tags.json'
 import * as quay_repo2docker_main from './quay.io-jupyterhub-repo2docker-tags-main.json'
 
+// Multi arch
+import * as quay_podman from './quay.io-containers-podman-tags.json'
+import * as quay_podman_v3 from './quay.io-containers-podman-tags-v3.json'
+
+// Multi arch
 import * as docker_jupyterhub from './registry.hub.docker.com-jupyterhub-jupyterhub-tags.json'
 import * as docker_jupyterhub_latest from './registry.hub.docker.com-jupyterhub-jupyterhub-tags-latest.json'
 
+// Single arch
 import * as docker_omeroweb from './registry.hub.docker.com-openmicroscopy-omero-web-tags.json'
 import * as docker_omeroweb_latest from './registry.hub.docker.com-openmicroscopy-omero-web-tags-latest.json'
+
+test('getMatchingTag podman', async () => {
+  const r = await tags.getMatchingTag(quay_podman, quay_podman_v3.tags[0])
+  expect(r.tag).toEqual('v3.4.7')
+})
 
 test('getMatchingTag repo2docker', async () => {
   const r = await tags.getMatchingTag(
