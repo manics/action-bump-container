@@ -67,6 +67,11 @@ class TagDigest {
 
 // axios.interceptors.response.use(r => r, handle_axios_error)
 
+/**
+ * List tags for a Docker Hub repository
+ * @param repo The repository name in form owner/repo
+ * @returns a list of Docker Hub tag objects
+ */
 export async function dockerHubListTags(
   repo: string
 ): Promise<DockerHubTagList> {
@@ -76,6 +81,11 @@ export async function dockerHubListTags(
   return r.data
 }
 
+/**
+ * Get a single tag for a Docker Hub repository
+ * @param repo The repository name in form owner/repo
+ * @returns The Docker registry tag object
+ */
 export async function dockerHubGetTag(
   repo: string,
   tag: string
@@ -86,6 +96,11 @@ export async function dockerHubGetTag(
   return r.data
 }
 
+/**
+ * List tags for a Quay.io repository
+ * @param repo The repository name in form owner/repo
+ * @returns a list of Quay.io tag objecss
+ */
 export async function quayIoListTags(repo: string): Promise<QuayIoTagList> {
   const url = `https://quay.io/api/v1/repository/${repo}/tag/?onlyActiveTags=true`
   core.debug(`Fetching ${url}`)
@@ -93,6 +108,11 @@ export async function quayIoListTags(repo: string): Promise<QuayIoTagList> {
   return r.data
 }
 
+/**
+ * Get a single tag for a Quay.io repository
+ * @param repo The repository name in form owner/repo
+ * @returns The Quay.io tag object
+ */
 export async function quayIoGetTag(
   repo: string,
   tag: string
@@ -131,14 +151,12 @@ function getTagDigests(tagList: DockerHubTagList | QuayIoTagList): TagDigest[] {
   } else if ('results' in tagList) {
     // docker hub: jq '.results[] | [.name, .images[].digest]'
     tagDigests = tagList.results.map(e => {
-      core.info(`${e.name} ${e.images[0].digest}`)
       const t = new TagDigest(
         e.name,
         e.images.map(i => i.digest)
       )
       return t
     })
-    core.info(tagDigests.toString())
   } else {
     throw new Error(`Unknown tag list type: ${tagList}`)
   }
@@ -149,14 +167,22 @@ function arraysEqual(a: any[], b: any[]): boolean {
   return a.length === b.length && a.every((value, index) => value === b[index])
 }
 
+/**
+ * Dereference a container alias tag, e.g. latest -> v1.2.3
+ * Matches are found by comparing the digest(s) of the alias tag and the digest(s) of the tags in the list. If a tag has multiple images (multi-arch) the full set of digests must match.
+ * @param tagList List of tags/digests to consider
+ * @param pointer Tag to be dereferenced
+ * @returns longest tag from tagList that matches pointer digest(s)
+ * @throws Error if no longer matching tag is found in tagList
+ */
 export async function getMatchingTag(
   tagList: DockerHubTagList | QuayIoTagList,
   pointer: DockerHubTag | QuayIoTag
 ): Promise<TagDigest> {
   const tagDigests = getTagDigests(tagList)
-  core.info(tagDigests.toString())
+  core.debug(`tag digests: ${tagDigests.toString()}`)
   const pointerTagDigest = getTagDigest(pointer)
-  core.info(pointerTagDigest.toString())
+  core.debug(`pointer tag digest: ${pointerTagDigest.toString()}`)
 
   let match: TagDigest | null = null
   for (const tagDigest of tagDigests) {
