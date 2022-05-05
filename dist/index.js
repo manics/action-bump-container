@@ -139,6 +139,11 @@ class TagDigest {
 //   throw new Error(err)
 // }
 // axios.interceptors.response.use(r => r, handle_axios_error)
+/**
+ * List tags for a Docker Hub repository
+ * @param repo The repository name in form owner/repo
+ * @returns a list of Docker Hub tag objects
+ */
 function dockerHubListTags(repo) {
     return __awaiter(this, void 0, void 0, function* () {
         const url = `https://registry.hub.docker.com/v2/repositories/${repo}/tags/`;
@@ -148,6 +153,11 @@ function dockerHubListTags(repo) {
     });
 }
 exports.dockerHubListTags = dockerHubListTags;
+/**
+ * Get a single tag for a Docker Hub repository
+ * @param repo The repository name in form owner/repo
+ * @returns The Docker registry tag object
+ */
 function dockerHubGetTag(repo, tag) {
     return __awaiter(this, void 0, void 0, function* () {
         const url = `https://registry.hub.docker.com/v2/repositories/${repo}/tags/${tag}`;
@@ -157,6 +167,11 @@ function dockerHubGetTag(repo, tag) {
     });
 }
 exports.dockerHubGetTag = dockerHubGetTag;
+/**
+ * List tags for a Quay.io repository
+ * @param repo The repository name in form owner/repo
+ * @returns a list of Quay.io tag objecss
+ */
 function quayIoListTags(repo) {
     return __awaiter(this, void 0, void 0, function* () {
         const url = `https://quay.io/api/v1/repository/${repo}/tag/?onlyActiveTags=true`;
@@ -166,6 +181,11 @@ function quayIoListTags(repo) {
     });
 }
 exports.quayIoListTags = quayIoListTags;
+/**
+ * Get a single tag for a Quay.io repository
+ * @param repo The repository name in form owner/repo
+ * @returns The Quay.io tag object
+ */
 function quayIoGetTag(repo, tag) {
     return __awaiter(this, void 0, void 0, function* () {
         const url = `https://quay.io/api/v1/repository/${repo}/tag/?onlyActiveTags=true&specificTag=${tag}`;
@@ -200,11 +220,9 @@ function getTagDigests(tagList) {
     else if ('results' in tagList) {
         // docker hub: jq '.results[] | [.name, .images[].digest]'
         tagDigests = tagList.results.map(e => {
-            core.info(`${e.name} ${e.images[0].digest}`);
             const t = new TagDigest(e.name, e.images.map(i => i.digest));
             return t;
         });
-        core.info(tagDigests.toString());
     }
     else {
         throw new Error(`Unknown tag list type: ${tagList}`);
@@ -215,21 +233,34 @@ function getTagDigests(tagList) {
 function arraysEqual(a, b) {
     return a.length === b.length && a.every((value, index) => value === b[index]);
 }
-function getMatchingTag(tagList, pointer) {
+/**
+ * Dereference a container alias tag, e.g. latest -> v1.2.3
+ * Matches are found by comparing the digest(s) of the alias tag and the digest(s) of the tags in the list. If a tag has multiple images (multi-arch) the full set of digests must match.
+ * @param tagList List of tags/digests to consider
+ * @param pointer Tag to be dereferenced
+ * @param regex Regex to match against the tag name
+ * @returns longest tag from tagList that matches pointer digest(s) and regex
+ * @throws Error if no longer matching tag is found in tagList
+ */
+function getMatchingTag(tagList, pointer, regex) {
     return __awaiter(this, void 0, void 0, function* () {
         const tagDigests = getTagDigests(tagList);
-        core.info(tagDigests.toString());
+        core.debug(`tag digests: ${tagDigests.toString()}`);
         const pointerTagDigest = getTagDigest(pointer);
-        core.info(pointerTagDigest.toString());
+        core.debug(`pointer tag digest: ${pointerTagDigest.toString()}`);
         let match = null;
         for (const tagDigest of tagDigests) {
             if (tagDigest.tag === pointerTagDigest.tag) {
                 continue;
             }
-            if (arraysEqual(pointerTagDigest.digests, tagDigest.digests)) {
-                if (!match || match.tag.length < tagDigest.tag.length) {
-                    match = tagDigest;
-                }
+            if (regex && !tagDigest.tag.match(regex)) {
+                continue;
+            }
+            if (!arraysEqual(pointerTagDigest.digests, tagDigest.digests)) {
+                continue;
+            }
+            if (!match || match.tag.length < tagDigest.tag.length) {
+                match = tagDigest;
             }
         }
         if (!match) {
