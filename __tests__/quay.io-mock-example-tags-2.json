@@ -1,0 +1,15 @@
+{
+  "tags": [
+    {
+      "name": "0.1.0",
+      "reversion": false,
+      "start_ts": 1640995200,
+      "manifest_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "is_manifest_list": false,
+      "size": 1,
+      "last_modified": "Sat, 01 Jan 2022 00:00:00 -0000"
+    }
+  ],
+  "page": 2,
+  "has_additional": false
+}

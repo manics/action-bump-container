@@ -56,16 +56,17 @@ class TagDigest {
   }
 }
 
-// function handle_axios_error(err: any): void {
-//   if (err.response) {
-//     core.error(err.response.statusText)
-//     core.error(err.response.status)
-//     throw new Error(`${err.response.status} ${err.response.statusText}`)
-//   }
-//   throw new Error(err)
-// }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handle_axios_error(err: any): void {
+  if (err.response) {
+    core.error(err.response.statusText)
+    core.error(err.response.status)
+    throw new Error(`${err.response.status} ${err.response.statusText}`)
+  }
+  throw new Error(err)
+}
 
-// axios.interceptors.response.use(r => r, handle_axios_error)
+axios.interceptors.response.use(r => r, handle_axios_error)
 
 /**
  * List tags for a Docker Hub repository
@@ -73,12 +74,19 @@ class TagDigest {
  * @returns a list of Docker Hub tag objects
  */
 export async function dockerHubListTags(
-  repo: string
-): Promise<DockerHubTagList> {
+  repo: string,
+  maxTags: number
+): Promise<DockerHubTag[]> {
   const url = `https://registry.hub.docker.com/v2/repositories/${repo}/tags/`
   core.debug(`Fetching ${url}`)
-  const r = await axios.get(url)
-  return r.data
+  let r: {data: DockerHubTagList} = await axios.get(url)
+  let results = r.data.results
+  while (results.length < maxTags && r.data.next) {
+    core.debug(`Fetching ${r.data.next}`)
+    r = await axios.get(r.data.next)
+    results = results.concat(r.data.results)
+  }
+  return results.slice(0, maxTags)
 }
 
 /**
@@ -101,11 +109,21 @@ export async function dockerHubGetTag(
  * @param repo The repository name in form owner/repo
  * @returns a list of Quay.io tag objecss
  */
-export async function quayIoListTags(repo: string): Promise<QuayIoTagList> {
+export async function quayIoListTags(
+  repo: string,
+  maxTags: number
+): Promise<QuayIoTag[]> {
   const url = `https://quay.io/api/v1/repository/${repo}/tag/?onlyActiveTags=true`
   core.debug(`Fetching ${url}`)
-  const r = await axios.get(url)
-  return r.data
+  let r: {data: QuayIoTagList} = await axios.get(url)
+  let tags = r.data.tags
+  while (r.data.tags.length < maxTags && r.data.has_additional) {
+    const nextPage = `${url}&page=${r.data.page + 1}`
+    core.debug(`Fetching ${nextPage}`)
+    r = await axios.get(nextPage)
+    tags = tags.concat(r.data.tags)
+  }
+  return tags.slice(0, maxTags)
 }
 
 /**
@@ -141,16 +159,19 @@ function getTagDigest(tag: DockerHubTag | QuayIoTag): TagDigest {
   }
 }
 
-function getTagDigests(tagList: DockerHubTagList | QuayIoTagList): TagDigest[] {
+function getTagDigests(tags: DockerHubTag[] | QuayIoTag[]): TagDigest[] {
   let tagDigests: TagDigest[] = []
-  if ('tags' in tagList) {
-    // quay.io: jq '.tags[] | [.name, .manifest_digest]'
-    tagDigests = tagList.tags.map(
+  if (!tags.length) {
+    throw new Error('No tags')
+  }
+  if ('manifest_digest' in tags[0]) {
+    // quay.io
+    tagDigests = (tags as QuayIoTag[]).map(
       t => new TagDigest(t.name, [t.manifest_digest])
     )
-  } else if ('results' in tagList) {
-    // docker hub: jq '.results[] | [.name, .images[].digest]'
-    tagDigests = tagList.results.map(e => {
+  } else if ('images' in tags[0]) {
+    // docker hub
+    tagDigests = (tags as DockerHubTag[]).map(e => {
       const t = new TagDigest(
         e.name,
         e.images.map(i => i.digest)
@@ -158,10 +179,11 @@ function getTagDigests(tagList: DockerHubTagList | QuayIoTagList): TagDigest[] {
       return t
     })
   } else {
-    throw new Error(`Unknown tag list type: ${tagList}`)
+    throw new Error(`Unknown tag list type: ${tags}`)
   }
   return tagDigests
 }
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function arraysEqual(a: any[], b: any[]): boolean {
   return a.length === b.length && a.every((value, index) => value === b[index])
@@ -177,7 +199,7 @@ function arraysEqual(a: any[], b: any[]): boolean {
  * @throws Error if no longer matching tag is found in tagList
  */
 export async function getMatchingTag(
-  tagList: DockerHubTagList | QuayIoTagList,
+  tagList: DockerHubTag[] | QuayIoTag[],
   pointer: DockerHubTag | QuayIoTag,
   regex?: string
 ): Promise<TagDigest> {

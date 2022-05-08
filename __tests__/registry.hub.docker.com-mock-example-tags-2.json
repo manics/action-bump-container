@@ -1,0 +1,37 @@
+{
+  "count": 3,
+  "next": null,
+  "previous": "https://registry.hub.docker.com/v2/repositories/mock/example/tags/?page=1",
+  "results": [
+    {
+      "creator": 1,
+      "id": 1,
+      "image_id": null,
+      "images": [
+        {
+          "architecture": "amd64",
+          "features": "",
+          "variant": null,
+          "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "os": "linux",
+          "os_features": "",
+          "os_version": null,
+          "size": 1,
+          "status": "active",
+          "last_pulled": "2022-01-01T01:01:01Z",
+          "last_pushed": "2022-01-01T00:00:00Z"
+        }
+      ],
+      "last_updated": "2022-01-01T00:00:00Z",
+      "last_updater": 3,
+      "last_updater_username": "test3",
+      "name": "0.1.0",
+      "repository": 1,
+      "full_size": 1,
+      "v2": true,
+      "tag_status": "active",
+      "tag_last_pulled": "2022-01-01T01:01:01Z",
+      "tag_last_pushed": "2022-01-01T00:00:00Z"
+    }
+  ]
+}

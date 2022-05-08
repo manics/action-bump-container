@@ -1,0 +1,67 @@
+{
+  "count": 3,
+  "next": "https://registry.hub.docker.com/v2/repositories/mock/example/tags/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "creator": 3,
+      "id": 3,
+      "image_id": null,
+      "images": [
+        {
+          "architecture": "amd64",
+          "features": "",
+          "variant": null,
+          "digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+          "os": "linux",
+          "os_features": "",
+          "os_version": null,
+          "size": 3,
+          "status": "active",
+          "last_pulled": "2022-01-03T01:01:01Z",
+          "last_pushed": "2022-01-03T00:00:00Z"
+        }
+      ],
+      "last_updated": "2022-01-03T00:00:00Z",
+      "last_updater": 3,
+      "last_updater_username": "test3",
+      "name": "0.3.0",
+      "repository": 1,
+      "full_size": 3,
+      "v2": true,
+      "tag_status": "active",
+      "tag_last_pulled": "2022-01-03T01:01:01Z",
+      "tag_last_pushed": "2022-01-03T00:00:00Z"
+    },
+    {
+      "creator": 2,
+      "id": 2,
+      "image_id": null,
+      "images": [
+        {
+          "architecture": "amd64",
+          "features": "",
+          "variant": null,
+          "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          "os": "linux",
+          "os_features": "",
+          "os_version": null,
+          "size": 2,
+          "status": "active",
+          "last_pulled": "2022-01-02T01:01:01Z",
+          "last_pushed": "2022-01-02T00:00:00Z"
+        }
+      ],
+      "last_updated": "2022-01-01T00:00:00Z",
+      "last_updater": 2,
+      "last_updater_username": "test2",
+      "name": "0.2.0",
+      "repository": 1,
+      "full_size": 2,
+      "v2": true,
+      "tag_status": "active",
+      "tag_last_pulled": "2022-01-02T01:01:01Z",
+      "tag_last_pushed": "2022-01-02T00:00:00Z"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "tags": [
+    {
+      "name": "0.3.0",
+      "reversion": false,
+      "start_ts": 1641168000,
+      "manifest_digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+      "is_manifest_list": false,
+      "size": 1,
+      "last_modified": "Mon, 03 Jan 2022 00:00:00 -0000"
+    },
+    {
+      "name": "0.2.0",
+      "reversion": false,
+      "start_ts": 1641081600,
+      "manifest_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "is_manifest_list": false,
+      "size": 1,
+      "last_modified": "Sun, 02 Jan 2022 00:00:00 -0000"
+    }
+  ],
+  "page": 1,
+  "has_additional": true
+}
