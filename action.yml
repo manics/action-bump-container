@@ -5,7 +5,7 @@ inputs:
   repo:
     required: true
     description: 'Repository, either `docker.io/<owner>/<repo>` or `quay.io/<owner>/<repo>`'
-  pointer:
+  pointerTag:
     required: true
     description: Tag to be dereferenced
     default: latest
