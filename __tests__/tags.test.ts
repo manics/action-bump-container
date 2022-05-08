@@ -103,7 +103,6 @@ import * as docker_example from './registry.hub.docker.com-mock-example-tags.jso
 
 test('dockerHubListTags pagination', async () => {
   const repo = 'mock/example'
-  const pathRegex = `^/v2/repositories/${repo}/tags/(\\?page=(\\d))?`
   nock('https://registry.hub.docker.com')
     .get(`/v2/repositories/${repo}/tags/`)
     .reply(200, docker_example)
@@ -122,7 +121,6 @@ import * as quay_example_2 from './quay.io-mock-example-tags-2.json'
 
 test('quayIoListTags pagination', async () => {
   const repo = 'mock/example'
-  const pathRegex = `^/api/v1/repository/${repo}/tag/?onlyActiveTags=true&(\\?page=(\\d))?`
   nock('https://quay.io')
     .get(`/api/v1/repository/${repo}/tag/?onlyActiveTags=true`)
     .reply(200, quay_example)

@@ -81,6 +81,9 @@ export async function dockerHubListTags(
   core.debug(`Fetching ${url}`)
   let r: {data: DockerHubTagList} = await axios.get(url)
   let results = r.data.results
+  if (!maxTags) {
+    return results
+  }
   while (results.length < maxTags && r.data.next) {
     core.debug(`Fetching ${r.data.next}`)
     r = await axios.get(r.data.next)
@@ -117,6 +120,9 @@ export async function quayIoListTags(
   core.debug(`Fetching ${url}`)
   let r: {data: QuayIoTagList} = await axios.get(url)
   let tags = r.data.tags
+  if (!maxTags) {
+    return tags
+  }
   while (r.data.tags.length < maxTags && r.data.has_additional) {
     const nextPage = `${url}&page=${r.data.page + 1}`
     core.debug(`Fetching ${nextPage}`)
