@@ -1,0 +1,16 @@
+# values.yaml template
+replicaCount: 1
+
+image:
+  repository: docker.io/openmicroscopy/omero-web
+  tag: %TAG_OMEROWEB%
+
+other:
+  image:
+    repository: docker.io/openmicroscopy/omero-web
+    tag: %TAG_OMEROWEB%
+
+r2d:
+  image:
+    repository: quay.io/jupyterhub/repo2docker
+    tag: %TAG_R2D%
