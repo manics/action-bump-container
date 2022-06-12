@@ -17,6 +17,20 @@ inputs:
     required: false
     description: Maximum number of tags to fetch, default is the first page returned by the registry API (currently 10 for Docker Hub, 50 for quay.io)
     default: ''
+  updateFile:
+    required: false
+    description: Path to file to be updated with the new tag
+  pattern:
+    required: false
+    description: |
+      Regular expression to match against the content of updateFile, can include groups.
+      For example '(repository: openmicroscopy\\/omero-web-standalone\\n\\s+tag:) (\\S+)'
+  replace:
+    required: false
+    description: |
+      String to replace the matched pattern with, `${tag}` will be replaced with the new tag.
+      For example '$1 ${tag}' where '$1' will be replaced with the first group in pattern
+
 runs:
   using: 'node16'
   main: 'dist/index.js'
